@@ -44,7 +44,7 @@ export class GitHubProvider implements Provider {
         const retryAfter = (res.headers as Headers).get('retry-after') ?? 'unknown'
         throw new Error(`Rate limited by GitHub. Retry after ${retryAfter}s for ${repo.url}`)
       }
-      if (res.status === 404 && res.statusText.includes('Not Found')) {
+      if (res.status === 404) {
         throw new Error(`Repository or path not found: ${repo.url}`)
       }
       throw new Error(`GitHub tree API error ${res.status} for ${repo.url}`)

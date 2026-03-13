@@ -1,6 +1,7 @@
 // tests/config/config.test.ts
 import { describe, it, expect, beforeEach, afterEach } from 'vitest'
-import { mkdirSync, rmSync, existsSync, statSync } from 'node:fs'
+import { mkdirSync, existsSync, statSync } from 'node:fs'
+import { rm } from 'node:fs/promises'
 import { join } from 'node:path'
 import { tmpdir } from 'node:os'
 import {
@@ -22,9 +23,9 @@ beforeEach(() => {
   process.env['HOME'] = testDir
 })
 
-afterEach(() => {
+afterEach(async () => {
   process.env['HOME'] = originalHome
-  rmSync(testDir, { recursive: true, force: true })
+  await rm(testDir, { recursive: true, force: true })
 })
 
 describe('loadConfig', () => {

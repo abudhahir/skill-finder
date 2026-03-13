@@ -30,7 +30,8 @@ async function resolveAsset(repo: string, path: string, libraries: Awaited<Retur
 }
 
 function resultToContent(result: { written: string[]; message: string }) {
-  return { content: [{ type: 'text' as const, text: result.message }] }
+  const base = { content: [{ type: 'text' as const, text: result.message }] }
+  return result.written.length === 0 ? { ...base, isError: true } : base
 }
 
 export function registerInstallTools(server: McpServer): void {
@@ -51,7 +52,7 @@ export function registerInstallTools(server: McpServer): void {
         { repo, path, platform: platform as Platform | undefined, targetDir: target_dir },
         config.libraries, provider, process.cwd()
       )
-      const isError = result.written.length === 0 && result.message.toLowerCase().includes('not found')
+      const isError = result.written.length === 0
       return { content: [{ type: 'text' as const, text: result.message }], ...(isError ? { isError: true } : {}) }
     }
   )
