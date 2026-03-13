@@ -27,7 +27,7 @@ function matchRule(path: string): PathRule | undefined {
 
 function stemName(path: string): string {
   const base = path.split('/').pop() ?? path
-  return base.replace(/\.(agent\.md|prompt\.md|md|json)$/i, '')
+  return base.replace(/\.(agent\.md|prompt\.md|md|json|ya?ml)$/i, '')
 }
 
 function skillDirFiles(tree: TreeEntry[], skillPath: string): string[] {
