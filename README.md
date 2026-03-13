@@ -4,12 +4,28 @@ An MCP server that discovers and installs skills, agents, commands, prompts, hoo
 
 ## Setup
 
+**1. Install the package:**
+
+```bash
+npm install -g skill-finder
+```
+
+Or run directly from the repo:
+
+```bash
+git clone https://github.com/abudhahir/skill-finder
+cd skill-finder
+npm install && npm run build && npm link
+```
+
+**2. Add to your MCP config** (`claude_desktop_config.json` or Claude Code settings):
+
 ```json
 {
   "mcpServers": {
     "skill-finder": {
-      "command": "node",
-      "args": ["/path/to/skill-finder/dist/index.js"]
+      "command": "npx",
+      "args": ["-y", "skill-finder"]
     }
   }
 }
@@ -44,16 +60,10 @@ install_skill repo="my-skills" path="skills/tdd/SKILL.md"
 
 Anthropic provides [MCP Inspector](https://github.com/modelcontextprotocol/inspector), an interactive UI for testing MCP servers without needing a full Claude setup.
 
-**1. Build the server:**
+**Launch the inspector:**
 
 ```bash
-npm run build
-```
-
-**2. Launch the inspector:**
-
-```bash
-npx @modelcontextprotocol/inspector node dist/index.js
+npx @modelcontextprotocol/inspector npx skill-finder
 ```
 
 The inspector opens at `http://localhost:5173` in your browser. From there you can:
