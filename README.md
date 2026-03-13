@@ -40,6 +40,38 @@ search query="test driven development" type="skill"
 install_skill repo="my-skills" path="skills/tdd/SKILL.md"
 ```
 
+## Testing with MCP Inspector
+
+Anthropic provides [MCP Inspector](https://github.com/modelcontextprotocol/inspector), an interactive UI for testing MCP servers without needing a full Claude setup.
+
+**1. Build the server:**
+
+```bash
+npm run build
+```
+
+**2. Launch the inspector:**
+
+```bash
+npx @modelcontextprotocol/inspector node dist/index.js
+```
+
+The inspector opens at `http://localhost:5173` in your browser. From there you can:
+
+- Browse all 12 registered tools in the **Tools** tab
+- Call any tool with custom inputs and inspect the response
+- Test the full flow: `add_library` → `search` → `install_skill`
+
+**Example flow in the inspector:**
+
+| Step | Tool | Input |
+|---|---|---|
+| 1 | `add_library` | `url: "https://github.com/anthropics/claude-code"` |
+| 2 | `search` | `query: "tdd"`, `type: "skill"` |
+| 3 | `install_skill` | `repo: "<name>"`, `path: "<path from search result>"` |
+
+For private repos, pass `token: "ghp_..."` to `add_library`.
+
 ## Config
 
 Libraries are stored in `~/.skill-finder/libraries.json` (created with `0600` permissions). Tokens are stored in plaintext — treat this file like an SSH key.
