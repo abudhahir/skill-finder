@@ -31,6 +31,38 @@ npm install && npm run build && npm link
 }
 ```
 
+### Local development mode
+
+If you cloned the repo and want to run it directly without installing:
+
+```bash
+npm install
+npm run dev
+```
+
+Or point your MCP config at the local build:
+
+```bash
+npm run build
+```
+
+```json
+{
+  "mcpServers": {
+    "skill-finder": {
+      "command": "node",
+      "args": ["/absolute/path/to/skill-finder/dist/index.js"]
+    }
+  }
+}
+```
+
+To test interactively without a build step:
+
+```bash
+npx @modelcontextprotocol/inspector npm run dev
+```
+
 ## Tools
 
 | Tool | Description |
@@ -60,10 +92,16 @@ install_skill repo="my-skills" path="skills/tdd/SKILL.md"
 
 Anthropic provides [MCP Inspector](https://github.com/modelcontextprotocol/inspector), an interactive UI for testing MCP servers without needing a full Claude setup.
 
-**Launch the inspector:**
+**Installed from npm:**
 
 ```bash
 npx @modelcontextprotocol/inspector npx skill-finder
+```
+
+**From a local clone (no build needed):**
+
+```bash
+npx @modelcontextprotocol/inspector npm run dev
 ```
 
 The inspector opens at `http://localhost:5173` in your browser. From there you can:
