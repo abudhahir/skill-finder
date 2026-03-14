@@ -8,7 +8,9 @@
     "build": "tsc",
     "dev": "tsx src/index.ts",
     "test": "vitest run",
-    "test:watch": "vitest"
+    "test:watch": "vitest",
+    "install-mcp": "node scripts/install-mcp.mjs",
+    "install-mcp:local": "node scripts/install-mcp.mjs --local"
   },
   "engines": { "node": ">=18.0.0" },
   "dependencies": {

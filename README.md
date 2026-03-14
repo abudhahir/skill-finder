@@ -4,21 +4,39 @@ An MCP server that discovers and installs skills, agents, commands, prompts, hoo
 
 ## Setup
 
-**1. Install the package:**
+### Automatic installation (recommended)
 
-```bash
-npm install -g skill-finder
-```
-
-Or run directly from the repo:
+Clone the repo and run the install script — it writes the correct config for every tool automatically:
 
 ```bash
 git clone https://github.com/abudhahir/skill-finder
 cd skill-finder
-npm install && npm run build && npm link
+npm install && npm run build
+node scripts/install-mcp.mjs
 ```
 
-**2. Add to your MCP config** (`claude_desktop_config.json` or Claude Code settings):
+The script configures all three tools at once using `npx skill-finder`:
+
+| Tool | Config file |
+|---|---|
+| Claude Desktop | macOS: `~/Library/Application Support/Claude/claude_desktop_config.json` |
+| | Windows: `%APPDATA%\Claude\claude_desktop_config.json` |
+| Claude Code | `~/.claude/settings.json` |
+| VS Code (GitHub Copilot) | macOS: `~/Library/Application Support/Code/User/settings.json` |
+| | Windows: `%APPDATA%\Code\User\settings.json` |
+| | Linux: `~/.config/Code/User/settings.json` |
+
+To use the local build instead of npx (useful during development):
+
+```bash
+node scripts/install-mcp.mjs --local
+```
+
+Then restart Claude Desktop and/or reload VS Code.
+
+### Manual configuration
+
+**Claude Desktop** — edit `claude_desktop_config.json`:
 
 ```json
 {
@@ -31,6 +49,24 @@ npm install && npm run build && npm link
 }
 ```
 
+**Claude Code** — edit `~/.claude/settings.json` (same structure as above).
+
+**VS Code (GitHub Copilot)** — edit VS Code user `settings.json`:
+
+```json
+{
+  "mcp": {
+    "servers": {
+      "skill-finder": {
+        "type": "stdio",
+        "command": "npx",
+        "args": ["-y", "skill-finder"]
+      }
+    }
+  }
+}
+```
+
 ### Local development mode
 
 If you cloned the repo and want to run it directly without installing:
@@ -38,29 +74,6 @@ If you cloned the repo and want to run it directly without installing:
 ```bash
 npm install
 npm run dev
-```
-
-Or point your MCP config at the local build:
-
-```bash
-npm run build
-```
-
-```json
-{
-  "mcpServers": {
-    "skill-finder": {
-      "command": "node",
-      "args": ["/absolute/path/to/skill-finder/dist/index.js"]
-    }
-  }
-}
-```
-
-To test interactively without a build step:
-
-```bash
-npx @modelcontextprotocol/inspector npm run dev
 ```
 
 ## Tools
