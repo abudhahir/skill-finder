@@ -4,15 +4,76 @@ An MCP server that discovers and installs skills, agents, commands, prompts, hoo
 
 ## Setup
 
+### Automatic installation (recommended)
+
+Clone the repo and run the install script — it writes the correct config for every tool automatically:
+
+```bash
+git clone https://github.com/abudhahir/skill-finder
+cd skill-finder
+npm install && npm run build
+node scripts/install-mcp.mjs
+```
+
+The script configures all three tools at once using `npx skill-finder`:
+
+| Tool | Config file |
+|---|---|
+| Claude Desktop | macOS: `~/Library/Application Support/Claude/claude_desktop_config.json` |
+| | Windows: `%APPDATA%\Claude\claude_desktop_config.json` |
+| Claude Code | `~/.claude/settings.json` |
+| VS Code (GitHub Copilot) | macOS: `~/Library/Application Support/Code/User/settings.json` |
+| | Windows: `%APPDATA%\Code\User\settings.json` |
+| | Linux: `~/.config/Code/User/settings.json` |
+
+To use the local build instead of npx (useful during development):
+
+```bash
+node scripts/install-mcp.mjs --local
+```
+
+Then restart Claude Desktop and/or reload VS Code.
+
+### Manual configuration
+
+**Claude Desktop** — edit `claude_desktop_config.json`:
+
 ```json
 {
   "mcpServers": {
     "skill-finder": {
-      "command": "node",
-      "args": ["/path/to/skill-finder/dist/index.js"]
+      "command": "npx",
+      "args": ["-y", "skill-finder"]
     }
   }
 }
+```
+
+**Claude Code** — edit `~/.claude/settings.json` (same structure as above).
+
+**VS Code (GitHub Copilot)** — edit VS Code user `settings.json`:
+
+```json
+{
+  "mcp": {
+    "servers": {
+      "skill-finder": {
+        "type": "stdio",
+        "command": "npx",
+        "args": ["-y", "skill-finder"]
+      }
+    }
+  }
+}
+```
+
+### Local development mode
+
+If you cloned the repo and want to run it directly without installing:
+
+```bash
+npm install
+npm run dev
 ```
 
 ## Tools
@@ -44,16 +105,16 @@ install_skill repo="my-skills" path="skills/tdd/SKILL.md"
 
 Anthropic provides [MCP Inspector](https://github.com/modelcontextprotocol/inspector), an interactive UI for testing MCP servers without needing a full Claude setup.
 
-**1. Build the server:**
+**Installed from npm:**
 
 ```bash
-npm run build
+npx @modelcontextprotocol/inspector npx skill-finder
 ```
 
-**2. Launch the inspector:**
+**From a local clone (no build needed):**
 
 ```bash
-npx @modelcontextprotocol/inspector node dist/index.js
+npx @modelcontextprotocol/inspector npm run dev
 ```
 
 The inspector opens at `http://localhost:5173` in your browser. From there you can:
