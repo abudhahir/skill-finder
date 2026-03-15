@@ -12,12 +12,15 @@ import { installHook } from '../installer/install-hook.js'
 import { installInstruction } from '../installer/install-instruction.js'
 import { findAsset, getOrPopulate } from '../discovery/session-cache.js'
 import type { AssetRecord, Platform } from '../types.js'
+import { resolveWorkspaceRoot } from './workspace-root.js'
+import { resolveInstallLocation } from './install-location.js'
 
 const installParamsSchema = z.object({
   repo: z.string().describe('Library name (asset.repo from search result)'),
   path: z.string().describe('Asset path within repo (asset.path from search result)'),
   platform: z.enum(['claude-code', 'copilot']).optional(),
   target_dir: z.string().optional().describe('Override default install directory'),
+  install_base: z.enum(['.claude', '.github', 'universal']).optional().describe('Install base when workspace has no .claude/.github directory'),
 })
 
 async function resolveAsset(repo: string, path: string, libraries: Awaited<ReturnType<typeof loadConfig>>['libraries']): Promise<AssetRecord | null> {
@@ -41,16 +44,21 @@ export function registerInstallTools(server: McpServer): void {
       description: 'Install any asset by repo and path — detects type automatically',
       inputSchema: installParamsSchema,
     },
-    async ({ repo, path, platform, target_dir }) => {
+    async ({ repo, path, platform, target_dir, install_base }) => {
       const config = await loadConfig()
       const libConfig = config.libraries.find((l) => l.name === repo)
       if (!libConfig) {
         return { content: [{ type: 'text' as const, text: `Library "${repo}" not registered. Use add_library to add it.` }], isError: true }
       }
       const provider = getProvider(libConfig.url)
+      const workspaceRoot = resolveWorkspaceRoot(undefined)
+      const location = resolveInstallLocation(workspaceRoot, target_dir, install_base)
+      if (location.needsChoice) {
+        return { content: [{ type: 'text' as const, text: location.message ?? 'Please choose an install location.' }], isError: true }
+      }
       const result = await install(
-        { repo, path, platform: platform as Platform | undefined, targetDir: target_dir },
-        config.libraries, provider, process.cwd()
+        { repo, path, platform: platform as Platform | undefined, targetDir: location.targetDir },
+        config.libraries, provider, workspaceRoot
       )
       const isError = result.written.length === 0
       return { content: [{ type: 'text' as const, text: result.message }], ...(isError ? { isError: true } : {}) }
@@ -62,7 +70,7 @@ export function registerInstallTools(server: McpServer): void {
     description: string,
     handler: (asset: AssetRecord, repo: Awaited<ReturnType<typeof loadConfig>>['libraries'][0], provider: ReturnType<typeof getProvider>, cwd: string, targetDir?: string) => Promise<{ written: string[]; message: string }>
   ) => {
-    server.registerTool(toolName, { description, inputSchema: installParamsSchema }, async ({ repo, path, platform, target_dir }) => {
+    server.registerTool(toolName, { description, inputSchema: installParamsSchema }, async ({ repo, path, platform, target_dir, install_base }) => {
       const config = await loadConfig()
       const libConfig = config.libraries.find((l) => l.name === repo)
       if (!libConfig) return { content: [{ type: 'text' as const, text: `Library "${repo}" not registered` }], isError: true }
@@ -72,7 +80,12 @@ export function registerInstallTools(server: McpServer): void {
 
       const resolved = { ...asset, platform: (platform as Platform | undefined) ?? asset.platform }
       const provider = getProvider(libConfig.url)
-      const result = await handler(resolved, libConfig, provider, process.cwd(), target_dir)
+      const workspaceRoot = resolveWorkspaceRoot(undefined)
+      const location = resolveInstallLocation(workspaceRoot, target_dir, install_base)
+      if (location.needsChoice) {
+        return { content: [{ type: 'text' as const, text: location.message ?? 'Please choose an install location.' }], isError: true }
+      }
+      const result = await handler(resolved, libConfig, provider, workspaceRoot, location.targetDir)
       return resultToContent(result)
     })
   }
