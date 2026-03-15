@@ -2,56 +2,30 @@
 
 An MCP server that discovers and installs skills, agents, commands, prompts, hooks, and instructions from remote Git repositories (GitHub and GitLab) without cloning them.
 
-## Setup
+## Prerequisites
 
-### Automatic installation (recommended)
+- Node.js 18 or later (`node --version` to check)
 
-Clone the repo and run the install script — it writes the correct config for every tool automatically:
+## Build
 
 ```bash
 git clone https://github.com/abudhahir/skill-finder
 cd skill-finder
-npm install && npm run build
-node scripts/install-mcp.mjs
+npm install
+npm run build
 ```
 
-The script configures all three tools at once using `npx skill-finder`:
+This produces `dist/index.js`, which is the server entry point.
 
-| Tool | Config file |
-|---|---|
-| Claude Desktop | macOS: `~/Library/Application Support/Claude/claude_desktop_config.json` |
-| | Windows: `%APPDATA%\Claude\claude_desktop_config.json` |
-| Claude Code | `~/.claude/settings.json` |
-| VS Code (GitHub Copilot) | macOS: `~/Library/Application Support/Code/User/settings.json` |
-| | Windows: `%APPDATA%\Code\User\settings.json` |
-| | Linux: `~/.config/Code/User/settings.json` |
+## Setup
 
-To use the local build instead of npx (useful during development):
+All tools run the server via `node /absolute/path/to/dist/index.js`. Replace the path with wherever you cloned the repo.
 
-```bash
-node scripts/install-mcp.mjs --local
-```
+---
 
-Then restart Claude Desktop and/or reload VS Code.
+### VS Code (GitHub Copilot)
 
-### Manual configuration
-
-**Claude Desktop** — edit `claude_desktop_config.json`:
-
-```json
-{
-  "mcpServers": {
-    "skill-finder": {
-      "command": "npx",
-      "args": ["-y", "skill-finder"]
-    }
-  }
-}
-```
-
-**Claude Code** — edit `~/.claude/settings.json` (same structure as above).
-
-**VS Code (GitHub Copilot)** — edit VS Code user `settings.json`:
+Open **Settings (JSON)** (`Ctrl+Shift+P` → "Open User Settings JSON") and add:
 
 ```json
 {
@@ -59,22 +33,97 @@ Then restart Claude Desktop and/or reload VS Code.
     "servers": {
       "skill-finder": {
         "type": "stdio",
-        "command": "npx",
-        "args": ["-y", "skill-finder"]
+        "command": "node",
+        "args": ["C:/Projects/working/mcpservers/skill-finder/dist/index.js"]
       }
     }
   }
 }
 ```
 
-### Local development mode
+Reload VS Code after saving. To verify it loaded, open GitHub Copilot Chat, switch to **Agent** mode, and check that the skill-finder tools appear.
 
-If you cloned the repo and want to run it directly without installing:
+> **Windows paths:** Use forward slashes (`C:/path/to/...`) or escaped backslashes (`C:\\path\\to\\...`). Both work in JSON.
+
+---
+
+### Claude Desktop
+
+Edit the config file:
+
+- **Windows:** `%APPDATA%\Claude\claude_desktop_config.json`
+- **macOS:** `~/Library/Application Support/Claude/claude_desktop_config.json`
+
+```json
+{
+  "mcpServers": {
+    "skill-finder": {
+      "command": "node",
+      "args": ["/absolute/path/to/skill-finder/dist/index.js"]
+    }
+  }
+}
+```
+
+Restart Claude Desktop after saving.
+
+---
+
+### Claude Code
+
+Edit `~/.claude/settings.json`:
+
+```json
+{
+  "mcpServers": {
+    "skill-finder": {
+      "command": "node",
+      "args": ["/absolute/path/to/skill-finder/dist/index.js"]
+    }
+  }
+}
+```
+
+---
+
+### Development (no build required)
+
+To run the server directly from TypeScript source:
 
 ```bash
-npm install
 npm run dev
 ```
+
+To use the dev server in a tool config, replace `node` + `dist/index.js` with:
+
+```json
+{
+  "command": "npx",
+  "args": ["tsx", "/absolute/path/to/skill-finder/src/index.ts"]
+}
+```
+
+---
+
+## Testing with MCP Inspector
+
+Verify the server works before configuring any tool:
+
+```bash
+npx @modelcontextprotocol/inspector node dist/index.js
+```
+
+The inspector opens at `http://localhost:5173`. From the **Tools** tab you can call any tool and inspect the response.
+
+Example flow:
+
+| Step | Tool | Input |
+|---|---|---|
+| 1 | `add_library` | `url: "https://github.com/anthropics/claude-code"` |
+| 2 | `search` | `query: "tdd"`, `type: "skill"` |
+| 3 | `install_skill` | `repo: "<name>"`, `path: "<path from search result>"` |
+
+---
 
 ## Tools
 
@@ -93,46 +142,63 @@ npm run dev
 | `install_hook` | Install a hook to `.claude/hooks/` |
 | `install_instruction` | Append an instruction to `CLAUDE.md` or `AGENTS.md` |
 
-## Usage
-
-```
-add_library url="https://github.com/org/my-skills"
-search query="test driven development" type="skill"
-install_skill repo="my-skills" path="skills/tdd/SKILL.md"
-```
-
-## Testing with MCP Inspector
-
-Anthropic provides [MCP Inspector](https://github.com/modelcontextprotocol/inspector), an interactive UI for testing MCP servers without needing a full Claude setup.
-
-**Installed from npm:**
-
-```bash
-npx @modelcontextprotocol/inspector npx skill-finder
-```
-
-**From a local clone (no build needed):**
-
-```bash
-npx @modelcontextprotocol/inspector npm run dev
-```
-
-The inspector opens at `http://localhost:5173` in your browser. From there you can:
-
-- Browse all 12 registered tools in the **Tools** tab
-- Call any tool with custom inputs and inspect the response
-- Test the full flow: `add_library` → `search` → `install_skill`
-
-**Example flow in the inspector:**
-
-| Step | Tool | Input |
-|---|---|---|
-| 1 | `add_library` | `url: "https://github.com/anthropics/claude-code"` |
-| 2 | `search` | `query: "tdd"`, `type: "skill"` |
-| 3 | `install_skill` | `repo: "<name>"`, `path: "<path from search result>"` |
-
 For private repos, pass `token: "ghp_..."` to `add_library`.
 
-## Config
+### Install location selection
 
-Libraries are stored in `~/.skill-finder/libraries.json` (created with `0600` permissions). Tokens are stored in plaintext — treat this file like an SSH key.
+Install tools support two location controls:
+
+- `target_dir` (highest priority): explicit absolute/relative destination root
+- `install_base`: one of `.claude`, `.github`, `universal`
+
+Behavior when no location is provided:
+
+1. If workspace contains `.claude` or `.github`, install proceeds using defaults and per-file routing.
+2. If workspace contains neither `.claude` nor `.github`, tool returns a clarification asking for `install_base`.
+
+`install_base` mapping:
+
+- `.claude` -> `<workspace>/.claude`
+- `.github` -> `<workspace>/.github`
+- `universal` -> `<workspace>`
+
+## Friendly Slash Command And Prompt
+
+This repo now includes a parameter-driven slash command and a reusable prompt that route only to `skill-finder` MCP tools:
+
+- `.claude/commands/sf.md` -> use as `/sf ...`
+- `.github/prompts/skill-finder-friendly.prompt.md`
+
+### `/sf` command format
+
+Use key=value pairs (quoted values allowed):
+
+```text
+/sf action=<search|install|add-library|list-libraries|remove-library|refresh-index> ...params
+```
+
+Examples:
+
+```text
+/sf action=search query="mcp logging" type=skill platform=copilot limit=8
+/sf action=install repo=awesome-skills path=skills/mcp-debug/SKILL.md platform=copilot install_base=.github
+/sf action=add-library url=https://github.com/org/skills name=org-skills root=skills
+/sf action=remove-library name=org-skills
+/sf action=refresh-index library=org-skills
+/sf action=list-libraries
+```
+
+### Supported parameters
+
+- `search`: `query` (required), `type`, `library`, `platform`, `limit`
+- `install`: `repo` (required), `path` (required), `platform`, `target_dir`, `install_base`
+- `add-library`: `url` (required), `name`, `branch`, `root`, `token`
+- `remove-library`: `name` (required)
+- `list-libraries`: no parameters
+- `refresh-index`: `library` (optional)
+
+Typed installs are also supported via `action=install-skill`, `install-agent`, `install-command`, `install-prompt`, `install-hook`, and `install-instruction` with `repo`, `path`, plus optional `platform`, `target_dir`, `install_base`.
+
+## Config storage
+
+Libraries and tokens are stored in `~/.skill-finder/libraries.json` (created with `0600` permissions). Treat this file like an SSH key.
