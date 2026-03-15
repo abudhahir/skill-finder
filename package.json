@@ -1,9 +1,9 @@
 {
-  "name": "skill-finder",
+  "name": "spark",
   "version": "0.1.0",
   "type": "module",
   "main": "dist/index.js",
-  "bin": { "skill-finder": "dist/index.js" },
+  "bin": { "spark": "dist/index.js" },
   "scripts": {
     "build": "tsc",
     "dev": "tsx src/index.ts",

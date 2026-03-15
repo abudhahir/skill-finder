@@ -17,7 +17,7 @@ let testDir: string
 let originalHome: string | undefined
 
 beforeEach(() => {
-  testDir = join(tmpdir(), `skill-finder-test-${Date.now()}`)
+  testDir = join(tmpdir(), `spark-test-${Date.now()}`)
   mkdirSync(testDir, { recursive: true })
   originalHome = process.env['HOME']
   process.env['HOME'] = testDir

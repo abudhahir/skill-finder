@@ -6,7 +6,7 @@ import { registerSearchTool } from './tools/search-tool.js'
 import { registerInstallTools } from './tools/install-tools.js'
 
 export const server = new McpServer({
-  name: 'skill-finder',
+  name: 'spark',
   version: '0.1.0',
 })
 
@@ -17,7 +17,7 @@ registerInstallTools(server)
 async function main() {
   const transport = new StdioServerTransport()
   await server.connect(transport)
-  console.error('skill-finder MCP server running on stdio')
+  console.error('spark MCP server running on stdio')
 }
 
 main().catch((error) => {

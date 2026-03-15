@@ -28,7 +28,7 @@ const asset: AssetRecord = {
 const repoConfig = { name: 'myrepo', url: 'https://github.com/a/b' }
 
 beforeEach(() => {
-  testCwd = join(tmpdir(), `skill-finder-test-${Date.now()}`)
+  testCwd = join(tmpdir(), `spark-test-${Date.now()}`)
   mkdirSync(testCwd, { recursive: true })
 })
 
