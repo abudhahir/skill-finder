@@ -134,3 +134,4 @@ out
 # Project specific
 dist/
 build/
+.claude/settings.local.json
