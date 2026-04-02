@@ -1,4 +1,4 @@
-# skill-finder
+# SPARK (Skill Provider & Agent Resource Kit)
 
 An MCP server that discovers and installs skills, agents, commands, prompts, hooks, and instructions from remote Git repositories (GitHub and GitLab) without cloning them.
 
@@ -9,8 +9,8 @@ An MCP server that discovers and installs skills, agents, commands, prompts, hoo
 ## Build
 
 ```bash
-git clone https://github.com/abudhahir/skill-finder
-cd skill-finder
+git clone https://github.com/abudhahir/spark
+cd spark
 npm install
 npm run build
 ```
@@ -31,17 +31,17 @@ Open **Settings (JSON)** (`Ctrl+Shift+P` → "Open User Settings JSON") and add:
 {
   "mcp": {
     "servers": {
-      "skill-finder": {
+      "spark": {
         "type": "stdio",
         "command": "node",
-        "args": ["C:/Projects/working/mcpservers/skill-finder/dist/index.js"]
+        "args": ["/Users/abu/projects/tooling/mcp-servers/skill-finder/dist/index.js"]
       }
     }
   }
 }
 ```
 
-Reload VS Code after saving. To verify it loaded, open GitHub Copilot Chat, switch to **Agent** mode, and check that the skill-finder tools appear.
+Reload VS Code after saving. To verify it loaded, open GitHub Copilot Chat, switch to **Agent** mode, and check that the spark tools appear.
 
 > **Windows paths:** Use forward slashes (`C:/path/to/...`) or escaped backslashes (`C:\\path\\to\\...`). Both work in JSON.
 
@@ -57,9 +57,9 @@ Edit the config file:
 ```json
 {
   "mcpServers": {
-    "skill-finder": {
+    "spark": {
       "command": "node",
-      "args": ["/absolute/path/to/skill-finder/dist/index.js"]
+      "args": ["/absolute/path/to/spark/dist/index.js"]
     }
   }
 }
@@ -76,9 +76,9 @@ Edit `~/.claude/settings.json`:
 ```json
 {
   "mcpServers": {
-    "skill-finder": {
+    "spark": {
       "command": "node",
-      "args": ["/absolute/path/to/skill-finder/dist/index.js"]
+      "args": ["/absolute/path/to/spark/dist/index.js"]
     }
   }
 }
@@ -99,7 +99,7 @@ To use the dev server in a tool config, replace `node` + `dist/index.js` with:
 ```json
 {
   "command": "npx",
-  "args": ["tsx", "/absolute/path/to/skill-finder/src/index.ts"]
+  "args": ["tsx", "/absolute/path/to/spark/src/index.ts"]
 }
 ```
 
@@ -117,30 +117,30 @@ The inspector opens at `http://localhost:5173`. From the **Tools** tab you can c
 
 Example flow:
 
-| Step | Tool | Input |
-|---|---|---|
-| 1 | `add_library` | `url: "https://github.com/anthropics/claude-code"` |
-| 2 | `search` | `query: "tdd"`, `type: "skill"` |
-| 3 | `install_skill` | `repo: "<name>"`, `path: "<path from search result>"` |
+| Step | Tool            | Input                                                 |
+| ---- | --------------- | ----------------------------------------------------- |
+| 1    | `add_library`   | `url: "https://github.com/anthropics/claude-code"`    |
+| 2    | `search`        | `query: "tdd"`, `type: "skill"`                       |
+| 3    | `install_skill` | `repo: "<name>"`, `path: "<path from search result>"` |
 
 ---
 
 ## Tools
 
-| Tool | Description |
-|---|---|
-| `add_library` | Register a GitHub/GitLab repo as a source |
-| `remove_library` | Remove a registered library |
-| `list_libraries` | List all registered libraries |
-| `refresh_index` | Re-crawl libraries to pick up new assets |
-| `search` | Search across all libraries by name, tag, or description |
-| `install` | Install any asset (auto-detects type) |
-| `install_skill` | Install a skill to `.claude/skills/` |
-| `install_agent` | Install an agent to `.claude/agents/` or `.github/agents/` |
-| `install_command` | Install a command to `.claude/commands/` |
-| `install_prompt` | Install a prompt to `.github/prompts/` |
-| `install_hook` | Install a hook to `.claude/hooks/` |
-| `install_instruction` | Append an instruction to `CLAUDE.md` or `AGENTS.md` |
+| Tool                  | Description                                                |
+| --------------------- | ---------------------------------------------------------- |
+| `add_library`         | Register a GitHub/GitLab repo as a source                  |
+| `remove_library`      | Remove a registered library                                |
+| `list_libraries`      | List all registered libraries                              |
+| `refresh_index`       | Re-crawl libraries to pick up new assets                   |
+| `search`              | Search across all libraries by name, tag, or description   |
+| `install`             | Install any asset (auto-detects type)                      |
+| `install_skill`       | Install a skill to `.claude/skills/`                       |
+| `install_agent`       | Install an agent to `.claude/agents/` or `.github/agents/` |
+| `install_command`     | Install a command to `.claude/commands/`                   |
+| `install_prompt`      | Install a prompt to `.github/prompts/`                     |
+| `install_hook`        | Install a hook to `.claude/hooks/`                         |
+| `install_instruction` | Append an instruction to `CLAUDE.md` or `AGENTS.md`        |
 
 For private repos, pass `token: "ghp_..."` to `add_library`.
 
@@ -164,10 +164,10 @@ Behavior when no location is provided:
 
 ## Friendly Slash Command And Prompt
 
-This repo now includes a parameter-driven slash command and a reusable prompt that route only to `skill-finder` MCP tools:
+This repo now includes a parameter-driven slash command and a reusable prompt that route only to `spark` MCP tools:
 
 - `.claude/commands/sf.md` -> use as `/sf ...`
-- `.github/prompts/skill-finder-friendly.prompt.md`
+- `.github/prompts/spark-friendly.prompt.md`
 
 ### `/sf` command format
 
@@ -201,4 +201,4 @@ Typed installs are also supported via `action=install-skill`, `install-agent`, `
 
 ## Config storage
 
-Libraries and tokens are stored in `~/.skill-finder/libraries.json` (created with `0600` permissions). Treat this file like an SSH key.
+Libraries and tokens are stored in `~/.spark/libraries.json` (created with `0600` permissions). Treat this file like an SSH key.

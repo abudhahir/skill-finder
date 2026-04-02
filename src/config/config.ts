@@ -11,7 +11,7 @@ export interface Config {
 
 export function configPath(): string {
   const home = process.env['HOME'] ?? process.env['USERPROFILE'] ?? homedir()
-  return join(home, '.skill-finder', 'libraries.json')
+  return join(home, '.spark', 'libraries.json')
 }
 
 function normalizeRoot(root: string | undefined): string | undefined {
